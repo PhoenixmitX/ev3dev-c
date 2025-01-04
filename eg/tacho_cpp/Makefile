@@ -12,15 +12,38 @@ D_H = ../../source/ev3
 CFLAGS = $(addprefix -I, $(D_H)) -O2 -std=gnu99 -W -Wall -Wno-comment
 CXXFLAGS = $(addprefix -I, $(D_H)) -O2 -g -W -Wall -Wno-comment
 
+# -- platform
 ifeq ($(OS),Windows_NT)
+# WIN32
+PLATFORM = __MINGW__
+else
+# UNIX
+PLATFORM = __UNIX__
+endif
+
+TOP = ../..
+
+# -- build on EV3 BRICK
+ifeq ($(PLATFORM),__UNIX__)
+EV3 = $(if $(shell $(CC) -dM -E - < /dev/null | grep __ARM_ARCH_4T__),1,0)
+else
+EV3 = 0
+endif
+
+# -- compiler
+ifeq ($(EV3),1)
+CC = arm-linux-gnueabi-gcc
+CXX = arm-linux-gnueabi-g++
+else
 CC = gcc
 CXX = g++
+endif
+
+ifeq ($(OS),Windows_NT)
 define remove
 	cmd /c del /f $(subst /,\,$1)
 endef
 else
-CC = arm-linux-gnueabi-gcc
-CXX = arm-linux-gnueabi-g++
 define remove
 	rm -f
 endef

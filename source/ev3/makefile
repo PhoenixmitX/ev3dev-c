@@ -19,8 +19,15 @@ endif
 
 TOP = ../..
 
-# -- compiler
+# -- build on EV3 BRICK
 ifeq ($(PLATFORM),__UNIX__)
+EV3 = $(if $(shell $(CC) -dM -E - < /dev/null | grep __ARM_ARCH_4T__),1,0)
+else
+EV3 = 0
+endif
+
+# -- compiler
+ifeq ($(EV3),1)
 CC = arm-linux-gnueabi-gcc
 CXX = arm-linux-gnueabi-g++
 LINK = arm-linux-gnueabi-ar
@@ -30,22 +37,15 @@ CXX = g++
 LINK = ar
 endif
 
-# -- build on EV3 BRICK
-ifeq ($(PLATFORM),__UNIX__)
-EV3 = $(if $(shell $(CC) -dM -E - < /dev/null | grep __ARM_ARCH_4T__),1,0)
-else
-EV3 = 0
-endif
-
 # -- yupp preprocessor
 YUPP_HOME = $(TOP)/yupp
 
 # -- perform preprocessing anywhere
 # SKIP_PP = 0
 # -- skip preprocessing on the EV3 brick (it's a bit slow), would be better to use pre-generated sources
-SKIP_PP = $(EV3)
+# SKIP_PP = $(EV3)
 # -- skip preprocessing anywhere
-# SKIP_PP = 1
+SKIP_PP = 1
 
 ifeq ($(SKIP_PP),0)
 PP = python -u $(YUPP_HOME)/yup.py
